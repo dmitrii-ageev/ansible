@@ -1,0 +1,7 @@
+#!/bin/sh
+docker run -it --rm --name ansible -h ansible \
+       --cpuset-cpus 0 --memory 2048mb --net host \
+       -v ~/Downloads:/home/developer/Downlods \
+       -v ~/Documents/Ansible:/home/developer/ansible \
+       -w /home/developer/ansible \
+       dmitriiageev/ansible
