@@ -11,5 +11,5 @@ docker run -d --rm --name ansible -h ansible \
 
 ```
 
-GitHub Page: https://github.com/dmitrii-ageev/ansible
-Docker Hub Page: https://hub.docker.com/r/dmitriiageev/ansible
+- GitHub Page: https://github.com/dmitrii-ageev/ansible
+- Docker Hub Page: https://hub.docker.com/r/dmitriiageev/ansible
