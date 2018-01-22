@@ -12,7 +12,7 @@ RUN useradd -u 1000 -g 1000 -G audio -m $UNAME
 
 # Install software package
 RUN apt update
-RUN apt install -y software-properties-common
+RUN apt install -y software-properties-common less vim-tiny
 RUN apt-add-repository ppa:ansible/ansible
 RUN apt update
 RUN apt install -y ansible
