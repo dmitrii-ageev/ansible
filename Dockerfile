@@ -1,23 +1,38 @@
 FROM ubuntu:xenial
 MAINTAINER Dmitrii Ageev <d.ageev@gmail.com>
 
-# Set environment variables
-ENV UNAME developer
-ENV HOME /home/developer
-ENV DEBIAN_FRONTEND noninteractive
-
-# Create a user and add it to audio group
-RUN groupadd -g 1000 $UNAME
-RUN useradd -u 1000 -g 1000 -G audio -m $UNAME
+# Set environment
+ENV APPLICATION "ansible"
+ENV VERSION "2.5.0"
+ENV EXECUTABLE "/bin/bash"
 
 # Install software package
 RUN apt update
-RUN apt install -y software-properties-common less vim-tiny
-RUN apt-add-repository ppa:ansible/ansible
-RUN apt update
-RUN apt install -y ansible
+RUN apt -y upgrade
+RUN apt install -y software-properties-common
+RUN apt-add-repository -y ppa:ansible/ansible
+RUN apt install --no-install-recommends -t xenial-updates -y \
+    curl \
+    less \
+    tar \
+    gzip \
+    bzip2 \
+    ansible \
+    vim-tiny \
+    python-pip \
+    python3-pip \
+    sudo
+RUN apt -y update
+RUN apt -y dist-upgrade
+RUN apt -y upgrade
 
-# Run a software piece as non-root user
-USER $UNAME
-WORKDIR $HOME/ansible
-CMD /bin/bash
+# Remove unwanted stuff
+RUN rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+# Copy scripts and pulse audio settings
+COPY files/wrapper /sbin/wrapper
+COPY files/entrypoint.sh /sbin/entrypoint.sh
+COPY files/hosts /etc/hosts
+
+# Proceed to the entry point
+ENTRYPOINT ["/sbin/entrypoint.sh"]

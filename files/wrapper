@@ -1,0 +1,63 @@
+#!/bin/bash
+EXECUTABLE=$(basename $0)
+APPLICATION=$(echo ${EXECUTABLE}|cut -d- -f1)
+VERSION=$(echo ${EXECUTABLE}|cut -s -d- -f2)
+VERSION=${VERSION:-'latest'}
+
+APP_USER=${APPLICATION}
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+# do we need to use sudo to start docker containers?
+( id -Gn | grep -q docker ) || SUDO=sudo
+
+USER_UID=$(id -u)
+USER_GID=$(id -g)
+
+DOWNLOAD_DIR=$(xdg-user-dir DOWNLOAD)
+if [ -z "${DOWNLOAD_DIR}" ]; then
+    DOWNLOAD_DIR="${HOME}/Downloads"
+fi;
+
+list_commands() {
+  echo ""
+  echo "Launch ${APPLICATION} using:"
+  echo "  ${EXECUTABLE} command"
+  echo ""
+  exit 1
+}
+
+prepare_docker_env_parameters() {
+  ENV_VARS+=" --env=USER_UID=${USER_UID}"
+  ENV_VARS+=" --env=USER_GID=${USER_GID}"
+  ENV_VARS+=" --env=DISPLAY"
+  ENV_VARS+=" --env=TZ=$(date +%Z)"
+}
+
+prepare_docker_volume_parameters() {
+  VOLUMES+=" --volume=${DOWNLOAD_DIR}:/home/${APP_USER}/Downloads"
+  VOLUMES+=" --volume=${HOME}/.${APPLICATION}:/home/${APP_USER}/.${APPLICATION}"
+  for FOLDER in .ssh Documents/Ansible; do
+    VOLUMES+=" --volume=${HOME}/${FOLDER}:/home/${APP_USER}/${FOLDER}"
+  done
+}
+
+case $1 in
+  --help|help)
+    list_commands
+    exit 1
+    ;;
+  *)
+    ;;
+esac
+
+prepare_docker_env_parameters
+prepare_docker_volume_parameters
+
+echo "Starting ${APPLICATION} (${VERSION})..."
+${SUDO} docker run -it --rm \
+  --name ${APPLICATION} -h docker \
+  --cpuset-cpus 0 --memory 2048mb --net host \
+  ${ENV_VARS} \
+  ${VIDEO_DEVICES} \
+  ${VOLUMES} \
+  dmitriiageev/${APPLICATION}:${VERSION} /bin/bash
